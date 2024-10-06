@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MIDファイルの読み込み</title>
+</head>
+<body>
+    <h1>MIDファイルを読み込んでバイナリデータを表示</h1><br>
+    <input type="file" id="fileInput" accept=".mid" /><br>
+    <textarea id="output" rows="20" cols="80" readonly></textarea>
+    <button id="downloadBtn" style="display: none;">Download as .txt</button>
+
+    <script>
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+
+            if (file) {
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    const arrayBuffer = e.target.result;
+                    const uint8Array = new Uint8Array(arrayBuffer);
+                    const hexString = Array.from(uint8Array)
+                        .map(byte => byte.toString(16).padStart(2, '0'))
+                        .join('');
+
+                    document.getElementById('output').value = hexString.toUpperCase();
+                    document.getElementById('downloadBtn').style.display = 'block'; // ボタンを表示
+                };
+
+                reader.readAsArrayBuffer(file);
+            }
+        });
+
+        document.getElementById('downloadBtn').addEventListener('click', function() {
+            const hexData = document.getElementById('output').value;
+            const blob = new Blob([hexData], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'output.txt';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url); // URLを解放
+        });
+    </script>
+</body>
+</html>
